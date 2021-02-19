@@ -14,10 +14,11 @@ from surprise.prediction_algorithms.matrix_factorization import NMF
 from surprise import accuracy
 from surprise.model_selection import train_test_split
 import time
+import pickle
 
 
 # options for algo: 'SVD', 'KNN', 'NMF'
-def get_trained_model(algo: str, model_kwargs: dict, train_set: Trainset) -> AlgoBase:
+def get_trained_model(algo: str, model_kwargs: dict, train_set: Trainset, save_path='') -> AlgoBase:
     if algo not in ['SVD', 'KNN', 'NMF']:
         raise Exception('algo only support: SVD, KNN, NMF')
     if algo == 'KNN':
@@ -30,6 +31,8 @@ def get_trained_model(algo: str, model_kwargs: dict, train_set: Trainset) -> Alg
     model.fit(train_set)
     time_end = time.time()
     cost_time = (time_end-time_start)*1000
+    if save_path:
+        pickle.dump(model, open(save_path, 'wb'))
     return model, cost_time
 
 def load_ratings_from_surprise() -> DatasetAutoFolds:
@@ -98,38 +101,7 @@ def benchmark(try_dict: dict) -> (pd.DataFrame, dict):
     df_res = pd.DataFrame(arr_res, columns=['model name', 'RMSE', 'MAE', 'fit_time(ms)'])
     return df_res, model_dict
 
-def get_user_recommendation(model: AlgoBase, user_id: int, k: int, data, movies: pd.DataFrame) -> pd.DataFrame:
-    """Makes movie recommendations a user.
 
-    Parameters
-    ----------
-        model : AlgoBase
-            A trained surprise model
-        user_id : int
-            The user for whom the recommendation will be done.
-        k : int
-            The number of items to recommend.
-        data : FIXME
-            The data needed to do the recommendation.
-        movies : pandas.DataFrame
-            The dataframe containing the movies metadata (title, genre, etc)
-
-    Returns
-    -------
-    pandas.Dataframe
-        A dataframe with the k movies that will be recommended the user. The dataframe should have the following
-        columns (movie_name : str, movie_genre : str, predicted_rating : float, true_rating : float)
-
-    Notes
-    -----
-    - You should create other functions that are used in this one and not put all the code in the same function.
-        For example to create the final dataframe, instead of implemented all the code
-        in this function (get_user_recommendation), you can create a new one (create_recommendation_dataframe)
-        that will be called in this function.
-    - You can add other arguments to the function if you need to.
-    """
-    # FIXME
-    pass
 
 if __name__ == '__main__':
     model_dict = {'KNN user based cosine':
